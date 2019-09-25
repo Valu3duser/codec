@@ -4,13 +4,32 @@ unsigned short createControlPacket(unsigned char regAddress, unsigned short data
 {
 	unsigned short packet = 0x00;
 
-	packet |= (regAddress << 9);
+	packet |= (regAddress << 13);
 	packet |= dataBits;
 	//packet |= (dataBits << 9);
 
 	return packet;
 }
 
+/**
+*	@brief Setup the audio data Format register
+*
+*	This funtion allows a selectable word length and sets the following 
+*	configuration:
+*
+*	ALRSWAP		: 0 = Output left and right data as normal
+*	BCLKINV		: 0 = BCLK not inverted
+*	MS			: 0 = Enable slave mode
+*	DLRSWAP		: 0 = Output left and right data as normal
+*	LRP			: 0 = normal LRCLK polarity
+*	WL[1:0]		: Word length is selectable via passed argument
+*	Format[1:0]	: 10 = I2S
+*
+*	@param enum bitDepth	Slect between 16, 20, 24 and 32 bits
+*
+*	@returns unsigned short	represents the register address and the 9 bit 
+*				configuration register
+*/
 unsigned short audioDataFormatSetup(enum bitDepth bd)
 {
 	unsigned short reg = 0x0000;
@@ -24,24 +43,23 @@ unsigned short audioDataFormatSetup(enum bitDepth bd)
 		}
 		case BD_20_BIT:
 		{
-			reg |= (1 << 3);
+			reg |= 0x04;
 			break;
 		}
 		case BD_24_BIT:
 		{
-			reg |= (1 << 4);
+			reg |= 0x08;
 			break;
 		}
 		case BD_32_BIT:
 		{
-			reg |= (1 << 3);
-			reg |= (1 << 4);
+			reg |= 0x0C;
 			break;
 		}
 	}
-
 	//i2s mode
-	reg |= (1 << 2);
+	reg |= 0x02;
 
-	return reg;
+	return createControlPacket(AUDIO_INTERFACE_1,reg);
 }
+
